@@ -40,12 +40,12 @@ categories:
 
 <h3 id="cpp_classess">技能C++层次类关系图</h3>
 
-![C++类关系图](images/ability-analyze-report/classes_relation.png)
+![C++类关系图](/images/ability-analyze-report/classes_relation.png)
 
 <h3 id="base_skill_proc">技能释放基本流程</h3>
 
 技能释放由客户端输入驱动通过网络模块发送消息，服务器收到消息后查找到技能对应释放对象调用脚本系统执行对应技能的入口函数， 其执行过程如下序列图所示:
-![技能释放序列图](images/ability-analyze-report/ability_flow.png)
+![技能释放序列图](/images/ability-analyze-report/ability_flow.png)
 
 <h2 id="skill_mgr_lua">脚本层技能管理分析</h2>
 
@@ -92,23 +92,23 @@ categories:
         
     * 发送命中伤害显示playHitVisToClient()
             
-        ![playHitVisToClient](images/ability-analyze-report/playHitVisToClient.png)
+        ![playHitVisToClient](/images/ability-analyze-report/playHitVisToClient.png)
 
     * 向客户端发送某目标免疫、闪避、抵抗的消息playStateInvalidToClient()
 
-        ![playStateInvalidToClient](images/ability-analyze-report/playStateInvalidToClient.png)
+        ![playStateInvalidToClient](/images/ability-analyze-report/playStateInvalidToClient.png)
 
     * skillMessageToClient(主要是控制动作特效)skillMessageToClient()
 
-        ![skillMessageToClient](images/ability-analyze-report/skillMessageToClient.png)
+        ![skillMessageToClient](/images/ability-analyze-report/skillMessageToClient.png)
 
     * 消耗资源，同时发送相关显示消息给客户端resCostAndMsgToClient()
 
-        ![resCostAndMsgToClient](images/ability-analyze-report/resCostAndMsgToClient.png)
+        ![resCostAndMsgToClient](/images/ability-analyze-report/resCostAndMsgToClient.png)
         
 4. 数值计算模块中更新角色属性(playerAttCaculate).
 
-    ![playerAttCaculate](images/ability-analyze-report/playerAttCaculate.png)
+    ![playerAttCaculate](/images/ability-analyze-report/playerAttCaculate.png)
 
 
 <h2 id="zhan_skill">战职业技能分析</h2>
@@ -123,7 +123,7 @@ categories:
 
 * 序列图:
 
-    ![11003序列图](images/ability-analyze-report/zhan_11002.png)
+    ![11003序列图](/images/ability-analyze-report/zhan_11002.png)
 
 <h3 id="zhan_w">W-旋风</h3>
 
@@ -133,7 +133,7 @@ categories:
 
 * 序列图:
     
-    ![11003序列图](images/ability-analyze-report/zhan_11003.png)
+    ![11003序列图](/images/ability-analyze-report/zhan_11003.png)
 
 <h3 id="zhan_e">E-怒吼</h3>
 
@@ -143,7 +143,7 @@ categories:
 
 * 时序图:
 
-    ![11003序列图](images/ability-analyze-report/zhan_11004.png)
+    ![11003序列图](/images/ability-analyze-report/zhan_11004.png)
 
 <h3 id="zhan_r">R-冲枪</h3>
 
@@ -153,13 +153,13 @@ categories:
 
 * 时序图:
 
-    ![11005序列图](images/ability-analyze-report/zhan_11005.png)
+    ![11005序列图](/images/ability-analyze-report/zhan_11005.png)
 
 <h3 id="zhan_a">战普通攻击技能(11001)</h3>
 
 * 时序图:
 
-    ![11001序列图](images/ability-analyze-report/zhan_11001.png)
+    ![11001序列图](/images/ability-analyze-report/zhan_11001.png)
 
 <h2 id="sheng_skill">圣职业技能分析</h2>
 
@@ -171,7 +171,7 @@ categories:
 
 * 时序图:
 
-    ![41002序列图](images/ability-analyze-report/sheng_41002.png)
+    ![41002序列图](/images/ability-analyze-report/sheng_41002.png)
 
 <h3 id="sheng_w">W-三向分身</h3>
 
@@ -181,7 +181,7 @@ categories:
 
 * 时序图:
 
-    ![41003序列图](images/ability-analyze-report/sheng_41003.png)
+    ![41003序列图](/images/ability-analyze-report/sheng_41003.png)
 
 <h3 id="sheng_e">E-连切</h3>
 
@@ -191,7 +191,7 @@ categories:
 
 * 时序图:
 
-    ![41004序列图](images/ability-analyze-report/sheng_41004.png)
+    ![41004序列图](/images/ability-analyze-report/sheng_41004.png)
 
 <h3 id="sheng_r">R-绝影斩</h3>
 
@@ -201,6 +201,6 @@ categories:
 
 * 时序图:
 
-    ![41006序列图](images/ability-analyze-report/sheng_41006.png)
+    ![41006序列图](/images/ability-analyze-report/sheng_41006.png)
 
 
