@@ -16,6 +16,7 @@ categories:
 * [服务器底层`(C++)`技能管理分析](#skill_mgr_cpp)
     * [技能C++层次类关系图](#cpp_classess)
     * [技能释放基本流程](#base_skill_proc)
+    * [天赋开启流程](#enable_talent_proc)
 * [脚本层技能管理分析](#skill_mgr_lua)
 * [脚本中网络通信](#script_netmsg)
 * [战职业技能分析](#zhan_skill)
@@ -26,9 +27,25 @@ categories:
     * [战普通攻击技能](#zhan_a)
 * [圣职业技能分析](#sheng_skill)
     * [Q-滑步](#sheng_q)
+        * [天赋-距离](#sheng_q1)
+        * [天赋-快速准备](#sheng_q2)
+        * [天赋-斩杀](#sheng_q3)
     * [W-三向分身](#sheng_w)
+        * [天赋-增强](#sheng_w1)
+        * [天赋-鬼步](#sheng_w2)
+        * [天赋-反击](#sheng_w3)
     * [E-连切](#sheng_e)
+        * [天赋-影增强](#sheng_e1)
+        * [天赋-嗜血](#sheng_e2)
+        * [天赋-破绽](#sheng_e3)
     * [R-绝影斩](#sheng_r)
+        * [天赋-追击强化](#sheng_r1)
+        * [天赋-饮血](#sheng_r2)
+        * [天赋-反刃](#sheng_r3)
+    * [被动天赋](#passive_talent)
+        * [会心一击](#sheng_b1)
+        * [替身术](#sheng_b2)
+        * [残影精通](#sheng_b3)
 
 ***
 
@@ -46,6 +63,16 @@ categories:
 
 技能释放由客户端输入驱动通过网络模块发送消息，服务器收到消息后查找到技能对应释放对象调用脚本系统执行对应技能的入口函数， 其执行过程如下序列图所示:
 ![技能释放序列图](/images/ability-analyze-report/ability_flow.png)
+
+<h3 id="enable_talent_proc">天赋开启流程</h3>
+
+在客户端天赋界面点选各个技能天赋确定后发消息通知服务器，服务器解析消息根据技能id及天赋id调用对应技能天赋的初始化lua函数(当玩家登陆进入服务器时也会根据天赋记录调用初始化函数)，执行序列图如下所示:
+
+![天赋开启流程](/images/ability-analyze-report/enable_talent_proc.png)
+
+*BTW: 当前天赋系统结构不能非常简单完美的实现重置天赋，那些根据额外的天赋属性触发的天赋可以简单的清理玩家对象的技能属性列表，但对于那些被动天赋很多都是挂触发器(Trigger)实现的，这需要删除触发器，进而涉及到触发器ID的保存问题*
+
+技能中天赋逻辑参见[圣技能分析中天赋相关内容](#sheng_skill)
 
 <h2 id="skill_mgr_lua">脚本层技能管理分析</h2>
 
@@ -175,6 +202,28 @@ categories:
 
     ![41002序列图](/images/ability-analyze-report/sheng_41002.png)
 
+    <h4 id="sheng_q1">天赋-距离</h4>
+
+    * 需求: 增加流影斩最大可移动距离25%
+    * 实现分析: 根据添加的技能属性Gis_ImproveDisRatio修改技能属性MaxDis值, 其过程如下时序图所示:
+
+        ![gis_sheng_q1](/images/ability-analyze-report/gis_sheng_q1.png)
+
+    <h4 id="sheng_q2">天赋-快速准备</h4>
+
+    * 需求: 当流影斩成功命中敌人时，会立即缩短流影斩一半的冷却时间
+    * 实现分析: 开启该天赋会添加新技能属性Gis_cutCDTime，当Q命中目标时尝试调用gis_sheng.on_cutdown_cdtime(),其过程如下图所示:
+
+        ![gis_sheng_q2](/images/ability-analyze-report/gis_sheng_q2.png)
+
+
+    <h4 id="sheng_q3">天赋-斩杀</h4>
+
+    * 需求: 当目标的当前血量少于20%，圣会尝试斩杀对方，造成基础攻击300%的伤害，只有真身出击时才可触发这个效果
+    * 实现分析: 开启该天赋会添加新技能属性Gis_lopHpRatio及Gis_lopDamRatio, 当对目标伤害结算前尝试调用gis_sheng.try_lop_target()增加伤害并伤害结算,其过程如下图所示:
+
+        ![gis_sheng_q3](/images/ability-analyze-report/gis_sheng_q3.png)
+
 <h3 id="sheng_w">W-三向分身</h3>
 
 * 需求:
@@ -184,6 +233,27 @@ categories:
 * 时序图:
 
     ![41003序列图](/images/ability-analyze-report/sheng_41003.png)
+
+    <h4 id="sheng_w1">天赋-增强</h4>
+
+    * 需求: 使用三项分身之后，获得BUFF，圣及其残影的所有伤害提升30%，持续1.5秒
+    * 实现分析: 技能释放后调用gis_sheng.try_improve_all_damage()检查是否启用该天赋并添加增益BUFF, 其过程如下所示:
+
+        ![gis_sheng_w1](/images/ability-analyze-report/gis_sheng_w1.png)
+
+    <h4 id="sheng_w2">天赋-鬼步</h4>
+
+    * 需求: 被圣及其分身所碰到每个目标都将被减速30%，持续2秒
+    * 实现分析: 施法前调用gis_sheng.try_guibu()检查是否启用改天赋并添加碰撞触发器, 其过程如下所示:
+
+        ![gis_sheng_w2](/images/ability-analyze-report/gis_sheng_w2.png)
+
+    <h4 id="sheng_w3">天赋-反击</h4>
+
+    * 需求:使用三向分身后角色会获得反击状态2秒，在此状态持续时圣受到攻击时，残影会瞬移到攻击者身旁重击他使之昏迷1秒，触发这个效果后BUFF会消失
+    * 实现分析: 技能释放后调用gis_sheng.try_counterattack()检查是否启用该技能，如果启用添加反击BUFF，反击BUFF给宿主对象注册伤害触发器，当触发器触发时触发影子进行攻击，其过程如下所示:
+
+        ![gis_sheng_w3](/images/ability-analyze-report/gis_sheng_w3.png)
 
 <h3 id="sheng_e">E-连切</h3>
 
@@ -195,6 +265,24 @@ categories:
 
     ![41004序列图](/images/ability-analyze-report/sheng_41004.png)
 
+    <h4 id="sheng_e1">天赋-影增强</h4>
+    * 需求: 连切引发的影子联动攻击的伤害提高50%
+    * 实现分析: 影子攻击前调用 gis_sheng.try_improve_blur_damage()提供技能伤害数值并返回恢复函数，攻击过程结束时执行恢复，其过程如下所示:
+        
+        ![gis_sheng_e1](/images/ability-analyze-report/gis_sheng_e1.png)
+        
+    <h4 id="sheng_e2">天赋-嗜血</h4>
+    * 需求: 圣的连切会让对方暴露弱点，使对方承受的圣的伤害提升30%，这个DEBUFF持续1.5秒
+    * 实现分析: 伤害结算前调用gis_sheng.try_be_bloodthirsty()给目标添加DEBUFF，其过程如下所示:
+        
+        ![gis_sheng_e2](/images/ability-analyze-report/gis_sheng_e2.png)
+        
+    <h4 id="sheng_e3">天赋-破绽</h4>
+    * 需求: 3次连续被击退的敌人将被击倒(2.5秒)
+    * 实现分析: 当发生3次攻击时调用gis_sheng.try_be_rip()给目标添加击倒DEBUFF，其过程如下所示:
+        
+        ![gis_sheng_e3](/images/ability-analyze-report/gis_sheng_e3.png)
+
 <h3 id="sheng_r">R-绝影斩</h3>
 
 * 需求:
@@ -205,4 +293,39 @@ categories:
 
     ![41006序列图](/images/ability-analyze-report/sheng_41006.png)
 
+    <h4 id="sheng_r1">天赋-追击强化</h4>
+    * 需求: 被残影追击攻击到的敌人将被昏迷
+    * 实现分析: 当影攻击到目标添加昏迷BUFF前调用gis_sheng.try_enhance_pursue()增加昏迷BUFF时间，其过程如下所示:
+
+        ![gis_sheng_r1](/images/ability-analyze-report/gis_sheng_r1.png)
+
+    <h4 id="sheng_r2">天赋-饮血</h4>
+    * 需求: 每击中一个敌人，会给圣叠加一层饮血BUFF，在10秒内回复最大血量的10%，最多可叠加5层
+    * 实现分析: 当攻击到目标伤害结算后调用gis_sheng.try_bebloodthirsty_with_healthregen()添加饮血BUFF，其过程如下所示:
+
+        ![gis_sheng_r2](/images/ability-analyze-report/gis_sheng_r2.png)
+
+    <h4 id="sheng_r3">天赋-反刃</h4>
+    * 需求: 到达目标点之后，圣再次施放乱舞从而返回起始位置，再次造成伤害
+    * 实现分析: 当技能释放后调用gis_sheng.try_anti_blade()返回lua闭包函数并执行该闭包，该闭包注册移动停止触发器，当移动停止后调整面向并调用skill_41006_cast()以达到再次施法，其过程如下图所示:
+
+        ![gis_sheng_r3](/images/ability-analyze-report/gis_sheng_r3.png)
+
+<h3 id="passive_talent">被动天赋</h3>
+
+<h4 id="sheng_b1">会心一击</h4>
+* 需求: 圣的普通攻击内置CD延长至2倍于目前时长，但会造成1.5倍于目前伤害的物理伤害
+* 实现分析: 启用该天赋直接修改普通攻击技能CD时间, 示意图略
+
+<h4 id="sheng_b2">替身术</h4>
+* 需求: 只要还有自身残影在场，圣便不会死去，当此时圣受到致命伤害时，圣和残影位置互换，由残影来遭受此次伤害
+* 实现分析: 启用该天赋时给玩家对象身上保存拦截死亡HOOK(*BTW: 由于结构的原因只能用这种取巧的方式实现*)，该HOOK函数主要功能是与周围最近的影子交换位置并取消其所受伤害减少的HP，其过程如下图所示:
+
+    ![gis_sheng_b1](/images/ability-analyze-report/gis_sheng_b2.png)
+
+<h4 id="sheng_b3">残影精通</h4>
+* 需求: 当残影由于受到伤害消失时，将回复圣能量30点，并会使残影位置上的敌人减速30%，持续1.5秒
+* 实现分析: 启用该天赋时添加一个新技能41010(用于承载资源消耗)，当影子受伤消失时执行该技能的资源消耗并给周围敌对目标添加DEBUFF，其过程如下图所示:
+
+    ![gis_sheng_b3](/images/ability-analyze-report/gis_sheng_b3.png)
 
