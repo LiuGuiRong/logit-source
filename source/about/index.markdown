@@ -7,4 +7,4 @@ sharing: true
 footer: true
 ---
 
-A C programmer.
+A C Programmer
