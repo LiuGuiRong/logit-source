@@ -3,7 +3,7 @@ layout: post
 title: "技能脚本系统实现分析"
 date: 2013-05-29 16:49
 comments: true
-categories: 
+categories: game
 ---
 
 **Author**: Tuz (youngtrips@mail.com)
