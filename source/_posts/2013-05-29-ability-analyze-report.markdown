@@ -52,14 +52,16 @@ categories:
 当前脚本系统中根据功能大致可分为以下几个模块:
 
 1. 职业基本属性配置模块(classAttTable): 通过lua table配置各个职业的基本数值属性、主要有基础HP、基础MP、基础护甲、基础法抗、基础攻击力，基础法术强度等与技能计算相关的属性，配置示例如下：
-<pre><code>
+
+{% codeblock lang:lua %}
     ClassAttTable = {
 	    [11] = {MaxHpBase = 550, ArmorBase = 0, SpellResistanceBase = 0, PhysicalPowerBase = 10, CriticalRating = 0,
                 CriticalDamageIncrease = 1, ArmorPenetration = 0, ArmorPenetrationRatio = 0, AttackInterval = 900,
                 AttackTimeBase = 1.11, SpellPowerBase = 10, SpellPenetration = 0, SpellPenetrationRatio = 0, SpellCDReduce = 0,
                 MaxMpBase = 200, MpRecoverBase = 3, HpRecover = 5, SpellToughness = 0, HitProbability = 0, DodgeProbability = 0, ViewRange = 12},
     }
-</code></pre>
+{% endcodeblock %}
+
 目前该配置由策划填写的csv表格通过工具生成lua文件所得。
 
 2. 技能数值属性(skillAttTable): 通过lua table配置各个技能的基本数值属性, 包括技能消耗、技能CD时间、技能断定距离、技能伤害类型及技能伤害，该配置与职业基本属性配置一样通过csv表格由工具生成lua文件所得；
