@@ -7,4 +7,4 @@ sharing: true
 footer: true
 ---
 
-A C Programmer
+C程序员,半个python程序员,半个linuxer, 喜欢瞎折腾
