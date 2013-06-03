@@ -6,7 +6,7 @@ comments: true
 categories: lua
 ---
 
-parse csv file by lua, mark it(from http://lua-users.org/wiki/LuaCsv):
+code snippet for parsing csv files in lua, mark it(from http://lua-users.org/wiki/LuaCsv):
 
 {% codeblock lang:lua %}
 function ParseCSVLine (line,sep) 
