@@ -118,6 +118,10 @@ C++层创建对象后将会在lua层创建对应的管理对象(包含需要在l
 
 ![skill_engine](/images/ability-design/skill_engine.png)
 
+Detail of Engine:
+
+![engine_detail](/images/ability-design/engine-detail.png)
+
 服务器端技能实例主要包含:
 
 1. OnAdd() 当技能被添加到对象身上时执行
