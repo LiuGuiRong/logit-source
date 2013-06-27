@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "ability-system-design"
+title: "技能脚本系统设计"
 date: 2013-06-24 08:59
 comments: true
 categories: 
@@ -9,8 +9,6 @@ categories:
 **Author**: Tuz (youngtrips@mail.com)
 <br>
 **Date**: 06.21.2013
-
-##技能脚本系统设计
 
 ###概述
 
