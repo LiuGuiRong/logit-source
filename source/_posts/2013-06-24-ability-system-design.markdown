@@ -249,7 +249,7 @@ public:
 
 脚本层中事件采用分级管理, 技能模块中管理技能中产生及所关注的事件, creature模块中管理对象产生及所关注的事件, 管理结构及事件注册分发过程如下图所示:
 
-![EventBox](/image/ability-design/eventbox2.png)
+![EventBox](/images/ability-design/eventbox2.png)
 
 代码示例:
 
