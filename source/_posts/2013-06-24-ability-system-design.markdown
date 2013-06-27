@@ -102,6 +102,11 @@ creature = {
 1. AttachInPT(uid)
 2. GetSkillProperty(skill_id, uid)
 
+**Question**
+
+1. 对象ID使用GUID还是uid
+2. 目前怪物没有uid
+
 ###技能框架(engine.skill)
 
 技能框架划分为Enter, Fire, End三个大的通用阶段, 在Fire阶段中不同的技能实例又可划分为多个阶段:
@@ -222,6 +227,16 @@ C++层实现一套脏属性更新机制, 提供给lua层添加更新属性请求
 
 在技能阶段过程中按消息产生的时间先后顺序将消息缓存起来, 在阶段结束时进行统一消息发送.
 
+{% codeblock lange:c %}
+
+// 缓存消息脚本接口
+void CacheMessage(const CGUID &dst, void *args);
+
+// 开始发送消息接口
+void SyncToCLT()
+
+{% endcodeblock %}
+
 ###事件机制
 
 将游戏逻辑中产生的游戏事件进行统一管理注册分发, 事件主要包括:
@@ -262,8 +277,10 @@ function event:new(type, cb, args)
     return ev
 end
 
--- 事件处理函数
+-- 事件映射
 engine.events = {}
+
+-- 事件处理函数
 engine.connect = function(ev)
 end
 
