@@ -262,7 +262,8 @@ function event:new(type, cb, args)
     return ev
 end
 
--- 与C++交互事件的统一入口
+-- 事件处理函数
+engine.events = {}
 engine.connect = function(ev)
 end
 
@@ -273,29 +274,6 @@ engine.signal = function(ev)
 end
 
 engine.dispatch = function(ev)
-end
-
--- 技能模块事件管理
-engine.skill.event = {
-    events = {} -- 事件映射表
-}
-engine.skill.connect = function(ev)
-end
-engine.skill.schedule = function(ev)
-    engine.schedule(ev)
-end
-engine.skill.dispatch = function(ev)
-    for _, ev in pairs(events) do
-    end
-end
-
--- creature模块事件管理
-creature.event = {events = {}}
-creature.event.connect = function(ev)
-end
-creature.event.schedule = function(ev)
-end
-creature.event.dispatch = function(ev)
 end
 
 {% endcodeblock %}
