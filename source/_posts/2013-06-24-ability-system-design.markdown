@@ -255,18 +255,45 @@ public:
 
 {% codeblock lang:lua %}
 
-engine.connect = function()
+-- event object
+event = {}
+function event:new(type, cb, args)
+    local ev = {type = type, cb = cb, args = args}
+    return ev
 end
 
-engine.schedule = function()
+-- 与C++交互事件的统一入口
+engine.connect = function(ev)
 end
 
-engine.signal = function()
+engine.schedule = function(ev)
 end
 
-engine.dispatch = function()
+engine.signal = function(ev)
+end
+
+engine.dispatch = function(ev)
+end
+
+-- 技能模块事件管理
+engine.skill.event = {
+    events = {} -- 事件映射表
+}
+engine.skill.connect = function(ev)
+end
+engine.skill.schedule = function(ev)
+end
+engine.skill.dispatch = function(ev)
+end
+
+-- creature模块事件管理
+creature.event = {events = {}}
+creature.event.connect = function(ev)
+end
+creature.event.schedule = function(ev)
+end
+creature.event.dispatch = function(ev)
 end
 
 {% endcodeblock %}
-
 
