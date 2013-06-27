@@ -238,7 +238,7 @@ C++层实现一套脏属性更新机制, 提供给lua层添加更新属性请求
 {% codeblock lang:c %}
 class EventBox {
 public:
-    void Connect(); // 注册所关心的事件
+    void Connect(EventType ev); // 注册所关心的事件
     void Signal(EventType ev, void *args);    // 产生事件
     void Dispatch(); //事件分发
 };
