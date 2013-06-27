@@ -282,8 +282,11 @@ engine.skill.event = {
 engine.skill.connect = function(ev)
 end
 engine.skill.schedule = function(ev)
+    engine.schedule(ev)
 end
 engine.skill.dispatch = function(ev)
+    for _, ev in pairs(events) do
+    end
 end
 
 -- creature模块事件管理
