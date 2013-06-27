@@ -1,22 +1,16 @@
 ---
 layout: post
-title: "ability-system-design"
+title: "技能脚本系统设计"
 date: 2013-06-24 08:59
 comments: true
 categories: 
 ---
 
-**Author**: Tuz (youngtrips@mail.com)
-<br>
-**Date**: 06.21.2013
-
-##技能脚本系统设计
-
 ###概述
 
 针对现有技能系统发送消息过大, C++和lua交互频繁, 客户端功能服务器化, 触发器抽象粒度太小, 数据更新同步等问题进行脚本系统重构优化. 通过分析现有技能实现抽象出技能框架(技能引擎), 实现控制基本技能流程, 同时加入事件进制, 如攻击, 受伤等事件, 进而希望能够丰富技能同时使天赋的实现比较优雅.
 
-###技能系统文件系统组织
+###技能系统文件组织结构
 
 * data (配置文件所在)
 	+ skill (技能实例配置)
@@ -35,103 +29,227 @@ categories:
 * ai (怪物Ai逻辑)
 * test (模块测试例程)
 
-###系统基本结构
+###模块组织结构
 
-技能系统主要分为如下几个部分:
+以lua table的形式组织各个模块组织结构
 
-1. 事件系统: 由C++实现事件管理系统并提供给lua层注册事件及抛出事件的接口函数, C++每tick处理每个对象的事件队列；
-2. 属性更新系统: 由C++实现对象属性更新机制并提供给lua层压入需要更新属性集的借口函数以实现lua上层逻辑勿需关系属性同步消息的发送；
-3. 对象属性管理系统: 在lua层实现玩家对象及怪物对象属性及包含的技能属性的管理以减少lua访问对象属性时与C++层的交互调用；
-4. 技能引擎(框架): 抽象出技能的公共部分, 将技能分解为几个阶段以控制技能实例的运行.
+* world 整个脚本层最外层的模块，组织管理其他模块/数据
+    + creatures 管理脚本中玩家/怪物对象table
+    + settings 存储配置表，包括技能属性配置表，BUFF属性配置表，天赋属性配置表，元数据配置列表
+        - skills 存储各个技能属性配置表
+        - buffs 存储各个BUFF属性配置表
+        - talents 存储各个天赋属性配置表
+        - metadata 存储各类元数据配备表
+            * chapions 各个职业数值配置表
+            * monsters 各类型怪物数值配置表
+            * levels 升级数值配置
+            * skills 各个技能基本数值配置表
+    + engine 服务器启动脚本文件统一装载, 技能引擎模块(流程管理, 封装技能公共函数), 玩家上下线处理过程
 
-###事件系统
+Example:
+{% codeblock lang:lua %}
+world = {
+    creatures = {},
+    settings = {
+        skill = {},
+        buff = {},
+        talent = {},
+        metadata = {
+            chapion = {},
+            monster = {},
+            level = {},
+            skill = {},
+        }
+    },
+    engine = {
+        skill = {}
+    },
+    talent = {},
+    skill = {},
+    buff = {},
+    ai = {},
+}
+{% endcodeblock %}
 
-![eventbox](/images/ability-design/eventbox.png)
+###对象数据管理
 
-由C++层在当前触发器基础之上(改变当前触发器使用方式)封装具体类型的游戏事件系统, 每个游戏对象有自己的事件队列, 对象在Lua层通过接口函数可以注册事件或者在技能引擎模块中通过接口函数发送产生的游戏事件.
+C++中玩家或者怪物在脚本层中对应有管理其基本属性(需要在lua中管理的属性)，技能列表，BUFF列表的对象(lua table)，对象结构如下所示:
 
-事件的组成:
+* 类型值 区分玩家和怪物
+* uid 对象ID，与C++层uid对象，用于索引对象
+* props 基本属性列表
+* skills 技能列表
+* buffs BUFF列表
+* variables 保存对象在脚本执行过程中产生的临时变量
+* env       技能执行相关环境变量(包括技能执行子阶段)
 
-1. 外部事件, 独立于技能体系, 不依赖于特定的技能产生, 主要由系统功能产生的, 主要包括:
-	
-	1. 时间事件: 定时器触发的事件
-	2. 碰撞事件: 由移动碰撞产生的事件
-
-2. 内部事件, 由技能各个模块执行过程中产生的, 主要有:
-
-	1. 技能释放和被释放事件
-	2. 攻击和被攻击事件
-	3. 暴击和被暴击事件
-	4. 死亡和被击杀事件
-	5. 闪避和被闪避事件
-
-
-###属性更新系统
-
-C++层实现一套脏属性更新机制, 提供给lua层添加更新属性请求的接口函数(该函数主要由脚本底层调用, 上层逻辑不直接调用), 属性更新系统定时或即时的编码变化的属性值给客户端.
-
-###对象属性管理系统
-
-C++层创建对象后将会在lua层创建对应的管理对象(包含需要在lua层管理的对象属性, 技能及BUFF), 可是说是取消现有PT访问的进制, 但可以保持现有PT访问的方式实现上层对PT访问的透明性. lua中对象继承关系如下图所示:
-
-![objs](/images/ability-design/objs.png)
-
-其中Creature中skills包含该对象所有技能实例的属性集, 其技能属性集继承对应的技能配置表, 当技能实例发生修改属性时该技能属性集会有对应新的属性值以实现COW机制, 例如:
+Example:
 
 {% codeblock lang:lua %}
-	function inherit(sub,super)
-		setmetatable(sub,
-     	{ __index=function(t,k)
-             local ret=super[k]
-             sub[k]=ret
-             return ret
-     	end } )
-	end
-	local a = {x = 1, y = 2}
-	local b = {}
-	inherit(b, a) -- b继承a两个成语x,y
-	b.x = 3		  -- b将会有独立于a的成员x, 其值为3
+creature = {
+    type = 0x0,
+    uid = 123,
+    props = {},
+    skills = {},
+    buffs = {},
+    variables = {},
+    env = {},
+}
+{% endcodeblock %}
+
+操作接口(封装成PT使用方式), 例如:
+
+1. AttachInPT(uid)
+2. GetSkillProperty(skill_id, uid)
+
+###技能框架(engine.skill)
+
+技能框架划分为Enter, Fire, End三个大的通用阶段, 在Fire阶段中不同的技能实例又可划分为多个阶段:
+
+1. Enter阶段: 每个技能实例的唯一入口, 如果技能正在执行中则调用技能实例事件处理, 否则进行施法前判定并进行吟唱;
+2. Fire阶段: 吟唱正常结束后进入的技能执行阶段, 该阶段控制技能实例在不同执行阶段的切换;
+3. End阶段: 技能结束阶段, 执行技能清理工作, 该阶段回调技能实例onEnd执行技能实例结束处理;
+
+技能框架示例如下:
+
+{% codeblock lang:lua %}
+module("world.engine.skill", package.seeall)
+
+function Enter(skill_id, uid, args)
+    local skill = _G["skill"..skill_id]
+    local env = {skill, uid, args}
+    local obj = GetObj(uid)
+    if obj.stage then
+        obj.stage.handleEvent(ON_INPUT, args)
+    else
+        if not selfOK() then
+            End(env)
+        else
+            local on_enter = skill.onEnter
+            if not on_enter(env) then
+                End(env)
+            else
+                local onTimeout = function Fire(env) end
+                local onInterrupt = function End(env) end
+                Incant(env, skill.props.incantTime, onTimeout, onInterrupt)
+                SyncToCLT() -- sync to client
+            end
+        end
+    end
+end
+
+function Fire(env, cnt)
+    cnt = cnt or 0
+    stage = env.skill.onFire["stage_"..cnt]
+    if not stage then
+        End(env)
+    else
+        stage.start()
+        local ontick = function()
+            local ret = stage.update()
+            if ret >= 0 then -- 转到下一个阶段
+                SyncToCLT()
+                Fire(env, ret)
+                return false
+            else            -- 转到结束阶段
+                SyncToCLT()
+                End(env)
+                return false
+            end
+            return true
+        end
+        Schedule(ontick) -- 执行阶段循环
+    end
+end
+
+function End(env)
+    local skill = env.skill
+    skill.onEnd(env)
+    SyncToCLT()
+end
 
 {% endcodeblock %}
 
-对象身上BUFF实例属性集管理与技能类似.
+####技能实例部分
+
+技能实例组成划分:
+
+* onEnter: 吟唱前技能实例自定义过程, 返回false终止技能的执行;
+* onEnd: 技能实例结束处理阶段;
+* onFire: 技能执行阶段表, 该表中配置技能执行中的各个子阶段; 每个子阶段由begin, update, handleEvent三个函数组成, 分别表示子阶段开始的处理, 子阶段循环处理过程及子阶段事件处理过程; 子阶段配置格式为:
+
+{% codeblock lang:lua %}
+onFire = {
+    stage_0 = {
+        begin = function() end,
+        update = function() end,
+        handleEvent = function() end,
+    }
+}
+{% endcodeblock %}
 
 
-###技能引擎
+技能实例示例:
 
-从客户端表现上来看,技能可以看成是一个连续的, 有时间限制的事件序列. 在这个时间线上, 会出现一些关键事件, 例如伤害, 发射飞弹或其他, 所以这些技能事件才是该技能真正需要在客户端－服务器, 客户端－客户端之间传递的信息, 每个客户端都可以根据这些关键信息还原出技能的连续信号(模拟技能过程). 该技能引擎由客户端的消息进行驱动, 引擎通过发送技能事件给客户端, 客户端通过收到的技能事件决定客户端的技能表现(如吟唱, 特效及播放动作等). 服务器端每个技能实例由基本的OnEnter(), OnFire()及OnEnd()等回调函数组成.
+{% codeblock lang:lua %}
+module("world.skill.1000", package.seeall)
 
-服务器端将技能流程主要分解为三个阶段:
+onEnter = function()
+end
 
-1. 技能开始(Enter): 施法前判定,回调技能实例OnEnter()及产生OnEnter事件通知客户端；
-2. 技能执行(Fire): 技能释放过程,根据技能实例类型获取目标对象并回调技能实例OnFire()及产生OnFire事件通知客户端；
-3. 技能结束(End): 技能结束过程,回调技能实例OnEnd()及产生OnEnd事件通知客户端.
+onEnd = function()
+end
 
-客户端技能流程与服务器类似:
+onFire = {
+    stage_0 = {
+        begin = function() end,
+        update = function() return 1 end,
+        handleEvent = function() end,
+    },
+    stage_1 = {
+        begin = function() end,
+        update = function() return -1 end,
+        handleEvent = function() end,
+    },
+}
+{% endcodeblock %}
 
-1. 技能触发阶段(Enter): 有玩家输入触发执行, 产生Enter事件请求服务器；
-2. 技能开始(OnEnter): 客户端接收OnEnter事件执行进行吟唱, 动作播放及特效绑定等；
-3. 技能释放(OnFire): 客户端接收OnFire事件执行伤害数值显示, 动作播放及特效绑定等；
-4. 技能结束(OnEnd): 客户端接收OnEnd事执行技能结束清理逻辑, 如特性清理, 动作重置等.
+###属性更新机制
 
-技能实例执行时序图如下所示:
+C++层实现一套脏属性更新机制, 提供给lua层添加更新属性请求的接口函数(该函数主要由脚本底层调用, 上层逻辑不直接调用), 属性更新系统定时或即时的编码变化的属性值给客户端.
 
-![skill_engine](/images/ability-design/skill_engine.png)
+###消息同步机制
 
-Detail of Engine:
+在技能阶段过程中按消息产生的时间先后顺序将消息缓存起来, 在阶段结束时进行统一消息发送.
 
-![engine_detail](/images/ability-design/engine-detail.png)
+###事件机制
 
-服务器端技能实例主要包含:
+将游戏逻辑中产生的游戏事件进行统一管理注册分发, 事件主要包括:
 
-1. OnAdd() 当技能被添加到对象身上时执行
-2. OnDel() 当技能从对象身上移除时执行
-3. OnUpgrade() 当技能升级时执行
-4. OnEnter()
-5. OnFire()
-6. OnEnd()
+1. 定时器事件
+2. 对象濒死事件
+3. 对象死亡事件
+4. 碰撞事件
+5. 开始移动事件
+6. 停止移动事件
 
-###天赋系统
+####C++层事件管理结构
 
-天赋可以归结为一种特殊的技能, 所以天赋实例与技能实例有着相同的组成成份. 天赋的驱动由技能引擎产生的各种事件进行驱动(如技能CD前后事件, 攻击前后事件, 资源消耗前后事件及伤害结算前后事件等).
+{% codeblock lang:C++ %}
+class EventBox {
+public:
+    void Connect(); // 注册所关心的事件
+    void Emit(EventType ev, void *args);    // 发送事件
+};
+
+{% endcodeblock %}
+
+####Lua层事件管理结构:
+
+{% codeblock lang:lua %}
+{% endcodeblock %}
+
+####Lua层定时器事件的注册
+
+####事件分发过程
 
