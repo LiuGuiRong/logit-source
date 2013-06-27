@@ -240,6 +240,7 @@ class EventBox {
 public:
     void Connect(); // 注册所关心的事件
     void Emit(EventType ev, void *args);    // 发送事件
+    void Dispatch(); //事件分发
 };
 
 {% endcodeblock %}
@@ -247,9 +248,18 @@ public:
 ####Lua层事件管理结构:
 
 {% codeblock lang:lua %}
+
+engine.register = function()
+end
+
+engine.dispatch = function()
+end
+
 {% endcodeblock %}
 
 ####Lua层定时器事件的注册
 
 ####事件分发过程
+
+
 
