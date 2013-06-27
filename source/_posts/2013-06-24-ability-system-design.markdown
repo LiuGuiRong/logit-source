@@ -229,13 +229,17 @@ C++层实现一套脏属性更新机制, 提供给lua层添加更新属性请求
 
 {% codeblock lange:c %}
 
-// 缓存消息脚本接口
+// 缓存消息脚本接口, 将消息压入缓冲区
 void CacheMessage(const CGUID &dst, void *args);
 
-// 开始发送消息接口
+// 开始发送消息接口, 从缓冲区取出消息发送并清空缓冲区
 void SyncToCLT()
 
 {% endcodeblock %}
+
+**Question**
+
+* 是否还继续采用table.marshal?
 
 ###事件机制
 
