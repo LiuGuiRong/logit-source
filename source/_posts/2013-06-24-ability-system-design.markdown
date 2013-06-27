@@ -254,9 +254,10 @@ void SyncToCLT()
 {% codeblock lang:c %}
 class EventBox {
 public:
-    void Connect(EventType ev); // 注册所关心的事件
-    void Signal(EventType ev, void *args);    // 产生事件
-    void Dispatch(); //事件分发
+    int Connect(EventType ev);                  // 注册所关心的事件
+    void Disconnect(int eid);                   // 取消所关心的事件
+    void Signal(EventType ev, void *args);      // 产生事件
+    void Dispatch();                            //事件分发
 };
 
 {% endcodeblock %}
