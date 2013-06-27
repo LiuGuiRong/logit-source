@@ -239,7 +239,7 @@ C++层实现一套脏属性更新机制, 提供给lua层添加更新属性请求
 class EventBox {
 public:
     void Connect(); // 注册所关心的事件
-    void Emit(EventType ev, void *args);    // 发送事件
+    void Signal(EventType ev, void *args);    // 产生事件
     void Dispatch(); //事件分发
 };
 
@@ -249,7 +249,13 @@ public:
 
 {% codeblock lang:lua %}
 
-engine.register = function()
+engine.connect = function()
+end
+
+engine.schedule = function()
+end
+
+engine.signal = function()
 end
 
 engine.dispatch = function()
@@ -257,9 +263,6 @@ end
 
 {% endcodeblock %}
 
-####Lua层定时器事件的注册
-
 ####事件分发过程
-
 
 
