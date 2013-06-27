@@ -45,6 +45,15 @@ categories:
             * levels 升级数值配置
             * skills 各个技能基本数值配置表
     + engine 服务器启动脚本文件统一装载, 技能引擎模块(流程管理, 封装技能公共函数), 玩家上下线处理过程
+        - init() 服务器启脚本系统初始化过程
+        - init_creature() 对象创建初始化过程
+        - on_player_online() 玩家上线处理过程
+        - on_player_offline() 玩家掉线处理过程
+        - add_skill() 对象添加技能
+        - del_skill() 对象删除技能
+        - update_skill() 升级对象技能
+        - add_talent() 对象添加天赋
+        - del_talent() 对象删除天赋
 
 Example:
 {% codeblock lang:lua %}
@@ -252,6 +261,7 @@ void SyncToCLT()
 5. 离开事件
 6. 开始移动事件
 7. 停止移动事件
+8. 对象切场景事件
 
 ####C++层事件管理结构
 
