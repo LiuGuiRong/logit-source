@@ -121,7 +121,7 @@ creature = {
 技能框架划分为Enter, Fire, End三个大的通用阶段, 在Fire阶段中不同的技能实例又可划分为多个阶段:
 
 1. Enter阶段: 每个技能实例的唯一入口, 如果技能正在执行中则调用技能实例事件处理, 否则进行施法前判定并进行吟唱;
-2. Fire阶段: 吟唱正常结束后进入的技能执行阶段, 该阶段控制技能实例在不同执行阶段的切换;
+2. Fire阶段: 吟唱正常结束后进入的技能执行阶段, 该阶段控制技能实例在不同执行子阶段的切换;
 3. End阶段: 技能结束阶段, 执行技能清理工作, 该阶段回调技能实例onEnd执行技能实例结束处理;
 
 技能框架示例如下:
@@ -146,7 +146,7 @@ function Enter(skill_id, uid, args)
                 local onTimeout = function Fire(env) end
                 local onInterrupt = function End(env) end
                 Incant(env, skill.props.incantTime, onTimeout, onInterrupt)
-                SyncToCLT() -- sync to client
+                engine.msg.send() -- sync message to client
             end
         end
     end
@@ -162,11 +162,11 @@ function Fire(env, cnt)
         local ontick = function()
             local ret = stage.update()
             if ret >= 0 then -- 转到下一个阶段
-                SyncToCLT()
+                engine.msg.send() -- sync message to client
                 Fire(env, ret)
                 return false
             else            -- 转到结束阶段
-                SyncToCLT()
+                engine.msg.send() -- sync message to client
                 End(env)
                 return false
             end
@@ -179,7 +179,7 @@ end
 function End(env)
     local skill = env.skill
     skill.onEnd(env)
-    SyncToCLT()
+    engine.msg.send() -- sync message to client
 end
 
 {% endcodeblock %}
@@ -190,7 +190,11 @@ end
 
 * onEnter: 吟唱前技能实例自定义过程, 返回false终止技能的执行;
 * onEnd: 技能实例结束处理阶段;
-* onFire: 技能执行阶段表, 该表中配置技能执行中的各个子阶段; 每个子阶段由begin, update, handleEvent三个函数组成, 分别表示子阶段开始的处理, 子阶段循环处理过程及子阶段事件处理过程; 子阶段配置格式为:
+* onFire: 技能执行阶段表, 该表中配置技能执行中的各个子阶段; 每个子阶段由begin, update, handleEvent三个函数组成, 分别表示子阶段开始的处理, 子阶段循环处理过程及子阶段事件处理过程;
+
+子阶段定义: 根据客户端输入事件划分的不同的技能执行过程, 例如战士的连刺可以划分为第一个阶段是普通Q过程, 第二个阶段是终结技阶段。
+
+子阶段配置格式为:
 
 {% codeblock lang:lua %}
 onFire = {
@@ -234,32 +238,39 @@ C++层实现一套脏属性更新机制, 提供给lua层添加更新属性请求
 
 ###消息同步机制
 
-在技能阶段过程中按消息产生的时间先后顺序将消息缓存起来, 在阶段结束时进行统一消息发送.
+在技能阶段过程中按消息产生的时间先后顺序将消息缓存在lua层中, 在阶段结束时调用C++接口进行统一发送.
 
 消息格式:
 {% codeblock %}
     msg = {
-        {event1, args1},
-        {event2, args2},
-        {event3, args3},
+        {key1 = value1},
+        {key2 = value2},
+        {key3 = value3},
         ...
     }
 {% endcodeblock %}
 
-接口示例:
+代码示例:
 {% codeblock lang:c %}
+// C++发送消息接口
+int SendMessage(ctx);
+{% endcodeblock %}
 
-// 缓存消息脚本接口, 将消息压入缓冲区
-void CacheMessage(const CGUID &dst, void *args);
-
-// 开始发送消息接口, 从缓冲区取出消息发送并清空缓冲区
-void SyncToCLT()
+{% codeblock lang:lua %}
+-- lua 层消息缓存及发送
+engine.msg = {cache = {}}
+engine.msg.push = function(self, event_id, value, dst)
+    local item = {[event_id] = value}
+    self.cache[dst] = self.cache[dst] or {}
+    table.insert(self.cache[dst], item)
+end
+engine.msg.send = function(self)
+    SendMessage(self.cache)
+    self.cache = {}
+end
 
 {% endcodeblock %}
 
-**Question**
-
-* 是否还继续采用table.marshal?
 
 ###事件机制
 
