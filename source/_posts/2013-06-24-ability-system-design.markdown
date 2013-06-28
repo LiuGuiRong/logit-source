@@ -146,7 +146,7 @@ function Enter(skill_id, uid, args)
                 local onTimeout = function Fire(env) end
                 local onInterrupt = function End(env) end
                 Incant(env, skill.props.incantTime, onTimeout, onInterrupt)
-                SyncToCLT() -- sync to client
+                engine.msg.send() -- sync message to client
             end
         end
     end
@@ -162,11 +162,11 @@ function Fire(env, cnt)
         local ontick = function()
             local ret = stage.update()
             if ret >= 0 then -- 转到下一个阶段
-                SyncToCLT()
+                engine.msg.send() -- sync message to client
                 Fire(env, ret)
                 return false
             else            -- 转到结束阶段
-                SyncToCLT()
+                engine.msg.send() -- sync message to client
                 End(env)
                 return false
             end
@@ -179,7 +179,7 @@ end
 function End(env)
     local skill = env.skill
     skill.onEnd(env)
-    SyncToCLT()
+    engine.msg.send() -- sync message to client
 end
 
 {% endcodeblock %}
@@ -238,32 +238,39 @@ C++层实现一套脏属性更新机制, 提供给lua层添加更新属性请求
 
 ###消息同步机制
 
-在技能阶段过程中按消息产生的时间先后顺序将消息缓存起来, 在阶段结束时进行统一消息发送.
+在技能阶段过程中按消息产生的时间先后顺序将消息缓存在lua层中, 在阶段结束时调用C++接口进行统一发送.
 
 消息格式:
 {% codeblock %}
     msg = {
-        {event1, args1},
-        {event2, args2},
-        {event3, args3},
+        {key1 = value1},
+        {key2 = value2},
+        {key3 = value3},
         ...
     }
 {% endcodeblock %}
 
-接口示例:
+代码示例:
 {% codeblock lang:c %}
+// C++发送消息接口
+int SendMessage(ctx);
+{% endcodeblock %}
 
-// 缓存消息脚本接口, 将消息压入缓冲区
-void CacheMessage(const CGUID &dst, void *args);
-
-// 开始发送消息接口, 从缓冲区取出消息发送并清空缓冲区
-void SyncToCLT()
+{% codeblock lang:lua %}
+-- lua 层消息缓存及发送
+engine.msg = {cache = {}}
+engine.msg.push = function(self, event_id, value, dst)
+    local item = {[event_id] = value}
+    self.cache[dst] = self.cache[dst] or {}
+    table.insert(self.cache[dst], item)
+end
+engine.msg.send = function(self)
+    SendMessage(self.cache)
+    self.cache = {}
+end
 
 {% endcodeblock %}
 
-**Question**
-
-* 是否还继续采用table.marshal?
 
 ###事件机制
 
