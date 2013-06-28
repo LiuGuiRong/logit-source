@@ -227,7 +227,7 @@ C++层实现一套脏属性更新机制, 提供给lua层添加更新属性请求
 
 在技能阶段过程中按消息产生的时间先后顺序将消息缓存起来, 在阶段结束时进行统一消息发送.
 
-{% codeblock lange:c %}
+{% codeblock lang:c %}
 
 // 缓存消息脚本接口, 将消息压入缓冲区
 void CacheMessage(const CGUID &dst, void *args);
