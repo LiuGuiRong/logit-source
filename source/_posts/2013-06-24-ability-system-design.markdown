@@ -22,7 +22,7 @@ categories:
 		- level.lua  (职业等级基本数值配置)
 		- skill.lua  (各个技能基本数值配置)
 * engine (技能框架,控制技能实例的运行及包含技能的公共函数等)
-* lib (与具体游戏逻辑无关的公共库模块,包括基本计算几何计算等)
+* lib (与具体游戏逻辑无关的公共库模块,包括基本计算几何计算, 数据结构及基本算法等)
 * skill (各个技能实例执行逻辑文件)
 * buff (各个BUFF实例执行逻辑文件)
 * talent (各个天赋实例执行逻辑)
@@ -274,7 +274,18 @@ end
 
 ###事件机制
 
-将游戏逻辑中产生的游戏事件进行统一管理注册分发, 事件主要包括:
+联系是普遍存在的, 事件是事与事或对象与对象之间的相关关系, 在游戏中亦是如此, 比如玩家攻击怪物, 玩家与玩家发生碰撞等, 这些过程可以抽象为:
+
+![event_model](http://www.lihuasoft.net/uppic/d_0609030915000.jpg)
+
+其中:
+
+1. 事件源表示任何产生事件的对象, 比如玩家, 怪物或者飞弹等;
+2. 事件表示任何可以处理的事件, 比如攻击, 眩晕或者碰撞等;
+3. 响应者表示任何关注某种事件的对象;
+4. 响应器表示对其关注事件的处理;
+
+我们可以将游戏中的事件主要划分为:
 
 1. 定时器事件
 2. 对象濒死事件
@@ -284,6 +295,8 @@ end
 6. 开始移动事件
 7. 停止移动事件
 8. 对象切场景事件
+9. 玩家上线事件
+10. 玩家下线事件
 
 ####C++层事件管理结构
 
@@ -296,11 +309,24 @@ public:
     void Dispatch();                            //事件分发
 };
 
+
+// 脚本接口
+
+// 注册事件
+// 参数
+// ev 事件对象表(lua表), 包含事件类型, 事件参数, 事件源对象id
+// 返回值:
+// 成功返回事件id, 失败返回-1
+int event_connect(ev);
+
+// 取消注册事件
+int event_disconnect(event_id);
+
 {% endcodeblock %}
 
 ####Lua层事件管理结构
 
-脚本层中事件采用分级管理, 技能模块中管理技能中产生及所关注的事件, creature模块中管理对象产生及所关注的事件, 管理结构及事件注册分发过程如下图所示:
+在脚本中通过engine.connect()和engine.disconnect()进行统一的事件注册及取消注册, 当事件派发时, C++统一调用egine.dispatch传人所有触发的事件, engine.dispatch进行统一的事件分发.
 
 ![EventBox](/images/ability-design/eventbox2.png)
 
@@ -310,25 +336,37 @@ public:
 
 -- event object
 event = {}
-function event:new(type, cb, args)
-    local ev = {type = type, cb = cb, args = args}
+function event:new(type, args, src_obj, dst_obj, stage)
+    local ev = {id = nil,
+                type = type,
+                args = args,
+                src_obj = src_obj,
+                dst_obj = dst_obj,
+                stage = stage,
+                list_node = nil, -- 双向链表结点方便从事件槽中删除事件
+    }
     return ev
 end
 
--- 事件映射
+-- 事件映射 ID ==> eventObj
 engine.events = {}
+-- event_type ==> eventObj
+engine.event_slots = {} -- dlist
 
 -- 事件处理函数
-engine.connect = function(ev)
+engine.connect = function(event_type, args, src_obj, dst_obj, stage)
 end
 
-engine.schedule = function(ev)
+engine.disconnect = function(event_id)
 end
 
-engine.signal = function(ev)
+engine.schedule = function(obj, args interval, repeat, delay)
 end
 
-engine.dispatch = function(ev)
+engine.signal = function(event_type, src_obj)
+end
+
+engine.dispatch = function(events)
 end
 
 {% endcodeblock %}
