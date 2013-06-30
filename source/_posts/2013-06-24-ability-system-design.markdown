@@ -276,7 +276,7 @@ end
 
 联系是普遍存在的, 事件是事与事或对象与对象之间的相关关系, 在游戏中亦是如此, 比如玩家攻击怪物, 玩家与玩家发生碰撞等, 这些过程可以抽象为:
 
-![event_model](http://www.lihuasoft.net/uppic/d_0609030915000.jpg)
+![event_model](/images/ability-design/event_model.png)
 
 其中:
 

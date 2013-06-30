@@ -2,18 +2,11 @@
 #      Main Configs       #
 # ----------------------- #
 
-<<<<<<< HEAD
-url: http://youngtrips.github.io//github
-title: My Octopress Blog
-subtitle: A blogging framework for hackers.
-author: Your Name
-=======
 #url: http://youngtrips.github.io/logit
 url: http://logit.me
 title: log(1)
 subtitle: somewhere to keep mind
 author: Tuz
->>>>>>> 29fc3fecc68c21614ca88e47bbc4e305a3a98ace
 simple_search: http://google.com/search
 description:
 
@@ -34,18 +27,11 @@ email:
 # ----------------------- #
 
 # If publishing to a subdirectory as in http://site.com/project set 'root: /project'
-<<<<<<< HEAD
-root: /github
-permalink: /blog/:year/:month/:day/:title/
-source: source
-destination: public/github
-=======
 #root: /logit
 root: /
 permalink: /blog/:year/:month/:day/:title/
 source: source
 destination: public/logit
->>>>>>> 29fc3fecc68c21614ca88e47bbc4e305a3a98ace
 plugins: plugins
 code_dir: downloads/code
 category_dir: blog/categories
