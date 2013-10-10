@@ -38,17 +38,68 @@ categories:
 
 ####行为树
 
+行为树（Behavior Tree），顾名思义，它是由若干个子节点组成的树形结构，如下图所示:
+
+![BehaviorTreeExample](/images/game-ai-design/behavior_tree_1.png)
+
+其中叶子节点为行为节点，行为节点是游戏相关的，不同的游戏可以定义不同的行为节点，行为节点通常分为两种允许状态:
+
+1. 运行中(Running)，该行为还在处理中;
+2. 完成(Finished)，该行为处理完成；
+
+其余节点是控制节点, 我们可以为行为树定义各种各样的控制节点（这也是行为树有意思的地方之一），一般来说，常用的控制节点有以下三种
+
+1. 选择(Selector), 选择其子节点的某一个执行;
+2. 序列(Sequence), 将其所有子节点依次执行, 也就是说当前一个返回"完成"状态后，再运行先一个子节点;
+3. 并行(Parallel), 将其所有子节点都运行一遍;
+
+当AI决策时从树的根节点自顶向下(depth-first search)，通过一些条件搜索这棵树，最终确定需要的行为（叶子节点），并执行相应动作。
+
+**如何选择子节点**
+
+如何从子节点中选择呢？选择的依据是什么呢？这里就要引入另一个概念，一般称之为前置条件或者前提（Precondition），每一个节点，不管是行为节点还是控制节点，都会包含一个前提的部分，如下所示:
+
+    -- lua code
+    local behavior_node = {
+        precondition = function() return true end,
+        action = function()
+            -- do something
+        end,
+    }
+
+当自顶向下搜索行为树时，依次测试每个子节点的前提，如果满足则进入该子节点，以此继续选择下一个节点，最终返回某个行为节点，所以当前行为节点的前提可以表示为:
+
+    Precondition[CurrNode] = Precondition[CurrNode.Parent] and Precondition[CurrNode.Parent.Parent] and ... and Precondition[RootNode]
+
+行为树就是通过行为节点，控制节点，以及每个节点上的前提，把整个AI的决策逻辑描述了出来，对于每次的Tick，可以用如下的流程来描述：
+
+    action = root.FindNextAction(input)
+    if action is not empty then
+        action.Execute(request,  input)  --request是输出的请求
+    else
+        print "no action is available"
+    end
+
+与有限状态机比起来，行为树结构还是比较简单的，而且当
+从概念上来说，行为树还是比较简单的，但对AI程序员来说，却是充满了吸引力，它的一些特性，比如可视化的决策逻辑，可复用的控制节点，逻辑和实现的低耦合等，较之传统的状态机，都是可以大大帮助我们迅速而便捷的组织我们的行为决策。
+
+关于行为树更加详细的解释见[这里](http://www.aisharing.com/archives/90)
+
+**目前使用行为树的游戏**
+
+1. Halo 3 & ODST
+2. League of Legends [参考幻灯片](/assets/upload/Woo_Andrew_PuttingThePlaneTogetherMidair.pdf)
 
 ###AI框架设计
 
+###Lua脚本集成
 
-###脚本集成
 
+###行为树编辑器
 
-###编辑器
-
+根据行为树的可视化的决策逻辑的特性可以开发出类似流程图绘制的编辑器，编辑器可以列出当前所有怪物的行为树及其节点，可以通过拖拽的方式定制怪物AI逻辑，编写各个节点的前提脚步及行为节点的游戏逻辑，同时编辑器可以导出lua脚本。
 
 ###AI调试
 
-
+通过编辑器与服务器进行消息通信，将行为树树的执行过程显示在编辑器中方便调试。
 
