@@ -38,7 +38,7 @@ categories:
 
 ####行为树
 
-行为树（Behavior Tree），顾名思义，它是由若干个子节点组成的树形结构，如下图所示:
+行为树(Behavior Tree, [see](http://en.wikipedia.org/wiki/Behavior_tree))，顾名思义，它是由若干个子节点组成的树形结构，如下图所示:
 
 ![BehaviorTreeExample](/images/game-ai-design/behavior_tree_1.png)
 
