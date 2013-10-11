@@ -105,4 +105,31 @@ AI模块作为一个黑盒，依赖特定的输入进行决策再输出特定的
 
 ###Lua脚本集成
 
+行为树每个节点的前提(Precondition)，进入、退出、动作等是游戏相关性的，将这些与游戏逻辑紧密相关的部分使用lua脚本实现，每个行为树节点表示为：
+
+    follow_base = {
+        precondition = function()
+            -- check condition
+        end,
+        behavior = function()
+            -- do something
+        end,
+        on_enter = function()
+            -- do something
+        end,
+        on_exit = function()
+            -- do something
+        end,
+    }
+
+###行为树编辑器
+
+实现类似如下可视化AI行为树编辑器:
+
+1. From "Three Ways of Cultivating Game AI"
+    ![BehaviorEditor1](/images/game-ai-design/editor1.png)
+2. A plugin for Unity Editor
+    ![BehaviorEditor2](/images/game-ai-design/editor2.png)
+3. CryENGINE
+    ![BehaviorEditor3](/images/game-ai-design/editor3.png)
 
