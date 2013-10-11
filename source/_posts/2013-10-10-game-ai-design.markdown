@@ -130,6 +130,6 @@ AI模块作为一个黑盒，依赖特定的输入进行决策再输出特定的
     ![BehaviorEditor1](/images/game-ai-design/editor1.png)
 2. A plugin for Unity Editor
     ![BehaviorEditor2](/images/game-ai-design/editor2.png)
-3. CryENGINE
+3. CryENGINE 3
     ![BehaviorEditor3](/images/game-ai-design/editor3.png)
 
