@@ -40,15 +40,15 @@ body > header h1 a, body > header h1 a:visited, body > header h1 a:hover {
 }
 
 body > footer {
-    background: $bgcolor;
-    color: $bgcolor;
+    background: transparent;
+    color: #222222;
     border: none;
     text-shadow: none;
 
     a {
-        color: $bgcolor;
-        &:hover { color: $bgcolor; }
-        &:visited { color: $bgcolor; }
+        color: #222222;
+        &:hover { color: #222222; }
+        &:visited { color: #222222; }
     }
 }
 
