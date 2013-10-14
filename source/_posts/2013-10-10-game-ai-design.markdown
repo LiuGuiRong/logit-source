@@ -99,9 +99,13 @@ AI模块作为一个黑盒，依赖特定的输入进行决策再输出特定的
 
 ![AI Module](/images/game-ai-design/ai_module.png)
 
-* INPUT，AI输入数据
+* INPUT，AI输入数据，由游戏中产生的各种事件构成，主要有:
+    1. 碰撞事件
+    2. 技能事件
 * AI Module，由行为树组成的AI决策模块；
-* AI输出，AI决策结果，例如移动、使用技能等；
+* AI输出，AI决策结果，主要有:
+    1. 移动: 请求移动模块移动到目标点
+    2. 技能模块: 通过creature:use_skill(args)直接使用技能
 
 ###Lua脚本集成
 
