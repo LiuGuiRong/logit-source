@@ -55,6 +55,31 @@ categories:
 
 当AI决策时从树的根节点自顶向下(depth-first search)，通过一些条件搜索这棵树，最终确定需要的行为（叶子节点），并执行相应动作。
 
+**行为树实现**
+
+    Task = {
+        update = function(args) end,
+        on_enter = function(args) end,
+        on_exit = function(args) end,
+    }
+    BehaviorNode = {
+        nodes = {},
+        status = 0,
+        task = nil,
+        tick = function(args)
+            return task:update(args)
+        end,
+    }
+    BehaviorTree = {
+        object = nil,
+        root = nil,
+        tick = function(args)
+            if root then
+                root:tick(args)
+            end
+        end,
+    }
+
 之前巡逻小怪AI用行为树可以表示为:
 
 ![behavior_tree_2](/images/game-ai-design/behavior_tree_2.png)
@@ -125,6 +150,7 @@ AI模块作为一个黑盒，依赖特定的输入进行决策再输出特定的
             -- do something
         end,
     }
+
 
 ###行为树编辑器
 
